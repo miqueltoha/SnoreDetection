@@ -16,6 +16,36 @@
 		C108BD562D8830E7004FAEF0 /* SnoreDetectionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C108BD552D8830E7004FAEF0 /* SnoreDetectionTests.swift */; };
 		C108BD602D8830E7004FAEF0 /* SnoreDetectionUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C108BD5F2D8830E7004FAEF0 /* SnoreDetectionUITests.swift */; };
 		C108BD622D8830E7004FAEF0 /* SnoreDetectionUITestsLaunchTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = C108BD612D8830E7004FAEF0 /* SnoreDetectionUITestsLaunchTests.swift */; };
+		C108BD742D884CA4004FAEF0 /* AppState.swift in Sources */ = {isa = PBXBuildFile; fileRef = C108BD732D884CA4004FAEF0 /* AppState.swift */; };
+		C108BD762D884E5C004FAEF0 /* TrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C108BD752D884E5C004FAEF0 /* TrackingView.swift */; };
+		C108BD792D884F23004FAEF0 /* LoginViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C108BD782D884F23004FAEF0 /* LoginViewModel.swift */; };
+		C108BD7B2D884F90004FAEF0 /* LoginView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C108BD7A2D884F90004FAEF0 /* LoginView.swift */; };
+		C124C19D2DB39792000D804F /* SleepClockSelector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C124C19C2DB39792000D804F /* SleepClockSelector.swift */; };
+		C128ADA32D8B1D0400486627 /* UserDefaults+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C128ADA22D8B1D0400486627 /* UserDefaults+Extensions.swift */; };
+		C18F155E2D90117F0030810B /* ToastViewModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18F155D2D90117F0030810B /* ToastViewModifier.swift */; };
+		C18F15602D90157B0030810B /* ToastViewModifier+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C18F155F2D90157B0030810B /* ToastViewModifier+Extensions.swift */; };
+		C18F15692D91912E0030810B /* SnoreBinary_NoRMS.mlmodel in Sources */ = {isa = PBXBuildFile; fileRef = C18F15682D91912E0030810B /* SnoreBinary_NoRMS.mlmodel */; };
+		C1927F642DAECD400057249A /* SoundSampleRecorderViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1927F632DAECD400057249A /* SoundSampleRecorderViewModel.swift */; };
+		C1927F662DAED0620057249A /* SoundSampleRecorderView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1927F652DAED0620057249A /* SoundSampleRecorderView.swift */; };
+		C1A98B722D8AEFB100188959 /* SleepPahseEntity+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A98B712D8AEFB100188959 /* SleepPahseEntity+Extensions.swift */; };
+		C1A98B742D8AF01D00188959 /* SleepSessionEntity+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A98B732D8AF01D00188959 /* SleepSessionEntity+Extensions.swift */; };
+		C1A98B762D8AF2F500188959 /* SnoringAvatarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1A98B752D8AF2F500188959 /* SnoringAvatarView.swift */; };
+		C1AA1DCE2D8D701900B523A2 /* AudioRecorderManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1AA1DCD2D8D701900B523A2 /* AudioRecorderManager.swift */; };
+		C1AA1DD12D8D7EDE00B523A2 /* SleepTrackingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1AA1DD02D8D7EDE00B523A2 /* SleepTrackingViewModel.swift */; };
+		C1AA1DD32D8D8B5600B523A2 /* RealTimeSnoreDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1AA1DD22D8D8B5600B523A2 /* RealTimeSnoreDetector.swift */; };
+		C1AA1DD72D8EEB4300B523A2 /* TrackingViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1AA1DD62D8EEB4300B523A2 /* TrackingViewModel.swift */; };
+		C1AA1DDD2D8F349D00B523A2 /* Toast.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1AA1DDC2D8F349D00B523A2 /* Toast.swift */; };
+		C1AA1DDF2D8F351400B523A2 /* ToastManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1AA1DDE2D8F351400B523A2 /* ToastManager.swift */; };
+		C1DCA2052D8C1EE80006A46C /* SleepSessionDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1DCA2042D8C1EE80006A46C /* SleepSessionDetailView.swift */; };
+		C1FBF9B62D888F7200AAC9CF /* PushNotificationManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1FBF9B52D888F7200AAC9CF /* PushNotificationManager.swift */; };
+		C1FBF9B82D889D7600AAC9CF /* SleepTrackingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1FBF9B72D889D7600AAC9CF /* SleepTrackingView.swift */; };
+		C1FBF9BA2D889D9200AAC9CF /* SleepHistoryView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1FBF9B92D889D9200AAC9CF /* SleepHistoryView.swift */; };
+		C1FBF9BC2D889DAB00AAC9CF /* InsightsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1FBF9BB2D889DAB00AAC9CF /* InsightsView.swift */; };
+		C1FBF9BE2D889DBB00AAC9CF /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1FBF9BD2D889DBB00AAC9CF /* SettingsView.swift */; };
+		C1FBF9C02D889DD100AAC9CF /* ProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1FBF9BF2D889DD100AAC9CF /* ProfileView.swift */; };
+		C1FBF9C22D88B41200AAC9CF /* SleepDataManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1FBF9C12D88B41200AAC9CF /* SleepDataManager.swift */; };
+		C1FBF9C42D88B42B00AAC9CF /* SleepSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1FBF9C32D88B42B00AAC9CF /* SleepSession.swift */; };
+		C1FBF9C62D88B4B000AAC9CF /* CloudKitManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = C1FBF9C52D88B4B000AAC9CF /* CloudKitManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -50,6 +80,36 @@
 		C108BD5B2D8830E7004FAEF0 /* SnoreDetectionUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SnoreDetectionUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		C108BD5F2D8830E7004FAEF0 /* SnoreDetectionUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnoreDetectionUITests.swift; sourceTree = "<group>"; };
 		C108BD612D8830E7004FAEF0 /* SnoreDetectionUITestsLaunchTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnoreDetectionUITestsLaunchTests.swift; sourceTree = "<group>"; };
+		C108BD732D884CA4004FAEF0 /* AppState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppState.swift; sourceTree = "<group>"; };
+		C108BD752D884E5C004FAEF0 /* TrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingView.swift; sourceTree = "<group>"; };
+		C108BD782D884F23004FAEF0 /* LoginViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginViewModel.swift; sourceTree = "<group>"; };
+		C108BD7A2D884F90004FAEF0 /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
+		C124C19C2DB39792000D804F /* SleepClockSelector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepClockSelector.swift; sourceTree = "<group>"; };
+		C128ADA22D8B1D0400486627 /* UserDefaults+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UserDefaults+Extensions.swift"; sourceTree = "<group>"; };
+		C18F155D2D90117F0030810B /* ToastViewModifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastViewModifier.swift; sourceTree = "<group>"; };
+		C18F155F2D90157B0030810B /* ToastViewModifier+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "ToastViewModifier+Extensions.swift"; sourceTree = "<group>"; };
+		C18F15682D91912E0030810B /* SnoreBinary_NoRMS.mlmodel */ = {isa = PBXFileReference; lastKnownFileType = file.mlmodel; path = SnoreBinary_NoRMS.mlmodel; sourceTree = "<group>"; };
+		C1927F632DAECD400057249A /* SoundSampleRecorderViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundSampleRecorderViewModel.swift; sourceTree = "<group>"; };
+		C1927F652DAED0620057249A /* SoundSampleRecorderView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundSampleRecorderView.swift; sourceTree = "<group>"; };
+		C1A98B712D8AEFB100188959 /* SleepPahseEntity+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SleepPahseEntity+Extensions.swift"; sourceTree = "<group>"; };
+		C1A98B732D8AF01D00188959 /* SleepSessionEntity+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "SleepSessionEntity+Extensions.swift"; sourceTree = "<group>"; };
+		C1A98B752D8AF2F500188959 /* SnoringAvatarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SnoringAvatarView.swift; sourceTree = "<group>"; };
+		C1AA1DCD2D8D701900B523A2 /* AudioRecorderManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioRecorderManager.swift; sourceTree = "<group>"; };
+		C1AA1DD02D8D7EDE00B523A2 /* SleepTrackingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTrackingViewModel.swift; sourceTree = "<group>"; };
+		C1AA1DD22D8D8B5600B523A2 /* RealTimeSnoreDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RealTimeSnoreDetector.swift; sourceTree = "<group>"; };
+		C1AA1DD62D8EEB4300B523A2 /* TrackingViewModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrackingViewModel.swift; sourceTree = "<group>"; };
+		C1AA1DDC2D8F349D00B523A2 /* Toast.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Toast.swift; sourceTree = "<group>"; };
+		C1AA1DDE2D8F351400B523A2 /* ToastManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToastManager.swift; sourceTree = "<group>"; };
+		C1DCA2042D8C1EE80006A46C /* SleepSessionDetailView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepSessionDetailView.swift; sourceTree = "<group>"; };
+		C1FBF9B52D888F7200AAC9CF /* PushNotificationManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PushNotificationManager.swift; sourceTree = "<group>"; };
+		C1FBF9B72D889D7600AAC9CF /* SleepTrackingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepTrackingView.swift; sourceTree = "<group>"; };
+		C1FBF9B92D889D9200AAC9CF /* SleepHistoryView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepHistoryView.swift; sourceTree = "<group>"; };
+		C1FBF9BB2D889DAB00AAC9CF /* InsightsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InsightsView.swift; sourceTree = "<group>"; };
+		C1FBF9BD2D889DBB00AAC9CF /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		C1FBF9BF2D889DD100AAC9CF /* ProfileView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProfileView.swift; sourceTree = "<group>"; };
+		C1FBF9C12D88B41200AAC9CF /* SleepDataManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepDataManager.swift; sourceTree = "<group>"; };
+		C1FBF9C32D88B42B00AAC9CF /* SleepSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SleepSession.swift; sourceTree = "<group>"; };
+		C1FBF9C52D88B4B000AAC9CF /* CloudKitManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CloudKitManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -100,6 +160,14 @@
 		C108BD3C2D8830E4004FAEF0 /* SnoreDetection */ = {
 			isa = PBXGroup;
 			children = (
+				C18F15612D9026850030810B /* MLModels */,
+				C1A98B702D8AEF8500188959 /* Extensions */,
+				C108BD722D884C5E004FAEF0 /* Model */,
+				C108BD712D884C5A004FAEF0 /* ViewModel */,
+				C108BD702D884C57004FAEF0 /* View */,
+				C1AA1DCF2D8D741000B523A2 /* DataManagers */,
+				C108BD6F2D884C4F004FAEF0 /* Services */,
+				C108BD6E2D884C45004FAEF0 /* Utils */,
 				C108BD3D2D8830E4004FAEF0 /* SnoreDetectionApp.swift */,
 				C108BD3F2D8830E4004FAEF0 /* ContentView.swift */,
 				C108BD412D8830E6004FAEF0 /* Assets.xcassets */,
@@ -135,6 +203,92 @@
 				C108BD612D8830E7004FAEF0 /* SnoreDetectionUITestsLaunchTests.swift */,
 			);
 			path = SnoreDetectionUITests;
+			sourceTree = "<group>";
+		};
+		C108BD6E2D884C45004FAEF0 /* Utils */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = Utils;
+			sourceTree = "<group>";
+		};
+		C108BD6F2D884C4F004FAEF0 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				C1FBF9B52D888F7200AAC9CF /* PushNotificationManager.swift */,
+				C1FBF9C52D88B4B000AAC9CF /* CloudKitManager.swift */,
+			);
+			path = Services;
+			sourceTree = "<group>";
+		};
+		C108BD702D884C57004FAEF0 /* View */ = {
+			isa = PBXGroup;
+			children = (
+				C108BD752D884E5C004FAEF0 /* TrackingView.swift */,
+				C108BD7A2D884F90004FAEF0 /* LoginView.swift */,
+				C1FBF9B72D889D7600AAC9CF /* SleepTrackingView.swift */,
+				C1FBF9B92D889D9200AAC9CF /* SleepHistoryView.swift */,
+				C1FBF9BB2D889DAB00AAC9CF /* InsightsView.swift */,
+				C1FBF9BD2D889DBB00AAC9CF /* SettingsView.swift */,
+				C1FBF9BF2D889DD100AAC9CF /* ProfileView.swift */,
+				C1A98B752D8AF2F500188959 /* SnoringAvatarView.swift */,
+				C1DCA2042D8C1EE80006A46C /* SleepSessionDetailView.swift */,
+				C18F155D2D90117F0030810B /* ToastViewModifier.swift */,
+				C1927F652DAED0620057249A /* SoundSampleRecorderView.swift */,
+				C124C19C2DB39792000D804F /* SleepClockSelector.swift */,
+			);
+			path = View;
+			sourceTree = "<group>";
+		};
+		C108BD712D884C5A004FAEF0 /* ViewModel */ = {
+			isa = PBXGroup;
+			children = (
+				C108BD732D884CA4004FAEF0 /* AppState.swift */,
+				C108BD782D884F23004FAEF0 /* LoginViewModel.swift */,
+				C1AA1DD02D8D7EDE00B523A2 /* SleepTrackingViewModel.swift */,
+				C1AA1DD62D8EEB4300B523A2 /* TrackingViewModel.swift */,
+				C1927F632DAECD400057249A /* SoundSampleRecorderViewModel.swift */,
+			);
+			path = ViewModel;
+			sourceTree = "<group>";
+		};
+		C108BD722D884C5E004FAEF0 /* Model */ = {
+			isa = PBXGroup;
+			children = (
+				C1FBF9C32D88B42B00AAC9CF /* SleepSession.swift */,
+				C1AA1DDC2D8F349D00B523A2 /* Toast.swift */,
+			);
+			path = Model;
+			sourceTree = "<group>";
+		};
+		C18F15612D9026850030810B /* MLModels */ = {
+			isa = PBXGroup;
+			children = (
+				C18F15682D91912E0030810B /* SnoreBinary_NoRMS.mlmodel */,
+			);
+			path = MLModels;
+			sourceTree = "<group>";
+		};
+		C1A98B702D8AEF8500188959 /* Extensions */ = {
+			isa = PBXGroup;
+			children = (
+				C1A98B712D8AEFB100188959 /* SleepPahseEntity+Extensions.swift */,
+				C1A98B732D8AF01D00188959 /* SleepSessionEntity+Extensions.swift */,
+				C128ADA22D8B1D0400486627 /* UserDefaults+Extensions.swift */,
+				C18F155F2D90157B0030810B /* ToastViewModifier+Extensions.swift */,
+			);
+			path = Extensions;
+			sourceTree = "<group>";
+		};
+		C1AA1DCF2D8D741000B523A2 /* DataManagers */ = {
+			isa = PBXGroup;
+			children = (
+				C1FBF9C12D88B41200AAC9CF /* SleepDataManager.swift */,
+				C1AA1DCD2D8D701900B523A2 /* AudioRecorderManager.swift */,
+				C1AA1DD22D8D8B5600B523A2 /* RealTimeSnoreDetector.swift */,
+				C1AA1DDE2D8F351400B523A2 /* ToastManager.swift */,
+			);
+			path = DataManagers;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -267,10 +421,40 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				C1DCA2052D8C1EE80006A46C /* SleepSessionDetailView.swift in Sources */,
 				C108BD472D8830E6004FAEF0 /* Persistence.swift in Sources */,
+				C108BD762D884E5C004FAEF0 /* TrackingView.swift in Sources */,
+				C108BD742D884CA4004FAEF0 /* AppState.swift in Sources */,
 				C108BD4A2D8830E6004FAEF0 /* SnoreDetection.xcdatamodeld in Sources */,
+				C128ADA32D8B1D0400486627 /* UserDefaults+Extensions.swift in Sources */,
+				C1FBF9C62D88B4B000AAC9CF /* CloudKitManager.swift in Sources */,
+				C1A98B742D8AF01D00188959 /* SleepSessionEntity+Extensions.swift in Sources */,
+				C1FBF9BA2D889D9200AAC9CF /* SleepHistoryView.swift in Sources */,
 				C108BD402D8830E4004FAEF0 /* ContentView.swift in Sources */,
+				C1FBF9C22D88B41200AAC9CF /* SleepDataManager.swift in Sources */,
+				C18F155E2D90117F0030810B /* ToastViewModifier.swift in Sources */,
+				C1AA1DDF2D8F351400B523A2 /* ToastManager.swift in Sources */,
+				C18F15602D90157B0030810B /* ToastViewModifier+Extensions.swift in Sources */,
 				C108BD3E2D8830E4004FAEF0 /* SnoreDetectionApp.swift in Sources */,
+				C124C19D2DB39792000D804F /* SleepClockSelector.swift in Sources */,
+				C1927F642DAECD400057249A /* SoundSampleRecorderViewModel.swift in Sources */,
+				C1AA1DCE2D8D701900B523A2 /* AudioRecorderManager.swift in Sources */,
+				C1FBF9B62D888F7200AAC9CF /* PushNotificationManager.swift in Sources */,
+				C108BD7B2D884F90004FAEF0 /* LoginView.swift in Sources */,
+				C1AA1DD12D8D7EDE00B523A2 /* SleepTrackingViewModel.swift in Sources */,
+				C1AA1DDD2D8F349D00B523A2 /* Toast.swift in Sources */,
+				C1A98B762D8AF2F500188959 /* SnoringAvatarView.swift in Sources */,
+				C1FBF9C42D88B42B00AAC9CF /* SleepSession.swift in Sources */,
+				C1FBF9BC2D889DAB00AAC9CF /* InsightsView.swift in Sources */,
+				C108BD792D884F23004FAEF0 /* LoginViewModel.swift in Sources */,
+				C1FBF9B82D889D7600AAC9CF /* SleepTrackingView.swift in Sources */,
+				C1FBF9C02D889DD100AAC9CF /* ProfileView.swift in Sources */,
+				C1AA1DD32D8D8B5600B523A2 /* RealTimeSnoreDetector.swift in Sources */,
+				C1A98B722D8AEFB100188959 /* SleepPahseEntity+Extensions.swift in Sources */,
+				C1927F662DAED0620057249A /* SoundSampleRecorderView.swift in Sources */,
+				C1FBF9BE2D889DBB00AAC9CF /* SettingsView.swift in Sources */,
+				C18F15692D91912E0030810B /* SnoreBinary_NoRMS.mlmodel in Sources */,
+				C1AA1DD72D8EEB4300B523A2 /* TrackingViewModel.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -359,7 +543,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -416,7 +600,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 17.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -435,10 +619,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SnoreDetection/Preview Content\"";
-				DEVELOPMENT_TEAM = 6LL4L5ZG3A;
+				DEVELOPMENT_TEAM = A83FZ3K22Q;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SnoreDetection/Info.plist;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "La teva veu serà enregistrada per analitzar el son.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -466,10 +651,11 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_ASSET_PATHS = "\"SnoreDetection/Preview Content\"";
-				DEVELOPMENT_TEAM = 6LL4L5ZG3A;
+				DEVELOPMENT_TEAM = A83FZ3K22Q;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = SnoreDetection/Info.plist;
+				INFOPLIST_KEY_NSMicrophoneUsageDescription = "La teva veu serà enregistrada per analitzar el son.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
