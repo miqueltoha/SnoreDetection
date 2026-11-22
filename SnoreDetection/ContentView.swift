@@ -9,7 +9,7 @@ import SwiftUI
 
 struct ContentView: View {
   @EnvironmentObject var appState: AppState
-  //@EnvironmentObject var sleepDataManager: SleepDataManager
+  @EnvironmentObject var sleepDataManager: SleepDataManager
   @EnvironmentObject var toastManager: ToastManager
   @State private var showAvatar = true // 🔹 Estat per mostrar l'avatar inicialment
   
@@ -29,7 +29,7 @@ struct ContentView: View {
         if appState.isLoggedIn {
           TrackingView()
             .transition(.move(edge: .trailing).combined(with: .opacity))
-            //.environmentObject(sleepDataManager)
+            .environmentObject(sleepDataManager)
             .environmentObject(toastManager)
         } else {
           LoginView()

@@ -1,189 +1,165 @@
-  //
-  //  SleepDataManager.swift
-  //  SnoreDetection
-  //
-  //  Created by Miquel Toha Perera on 17/3/25.
-  //
-
-  //NYAP
-  /*
-   import CoreData
-   import CloudKit
-   
-   class SleepDataManager: ObservableObject {
-   static let shared = SleepDataManager()
-   private let container: NSPersistentContainer
-   
-   init() {
-   container = NSPersistentContainer(name: "SleepModel")
-   container.loadPersistentStores { _, error in
-   if let error = error {
-   print("❌ Error carregant CoreData: \(error.localizedDescription)")
-   }
-   }
-   }
-   
-   func saveSleepSession(_ session: SleepSession) {
-   let context = container.viewContext
-   let newSession = SleepSessionEntity(context: context)
-   newSession.id = session.id
-   newSession.startTime = session.startTime
-   newSession.endTime = session.endTime
-   newSession.totalDuration = session.totalDuration
-   newSession.remDuration = session.remDuration
-   newSession.deepDuration = session.deepDuration
-   newSession.lightDuration = session.lightDuration
-   newSession.awakeDuration = session.awakeDuration
-   newSession.snoringDetected = session.snoringDetected
-   newSession.snoreIntensity = session.snoreIntensity
-   newSession.sleepQuality = session.sleepQuality
-   newSession.userNotes = session.userNotes
-   
-   do {
-   try context.save()
-   print("✅ Sessió de son guardada correctament!")
-   } catch {
-   print("❌ Error guardant la sessió: \(error.localizedDescription)")
-   }
-   }
-   
-   func fetchAllSessions() -> [SleepSessionEntity] {
-   let context = container.viewContext
-   let request: NSFetchRequest<SleepSessionEntity> = SleepSessionEntity.fetchRequest()
-   do {
-   return try context.fetch(request)
-   } catch {
-   print("❌ Error obtenint sessions: \(error.localizedDescription)")
-   return []
-   }
-   }
-   }
-  */
+//
+//  SleepDataManager.swift
+//  SnoreDetection
+//
+//  Created by Miquel Toha Perera on 17/3/25.
+//
 
 import CoreData
 import SwiftUI
 
-class SleepDataManager: ObservableObject {
-  /*
-   static let shared = SleepDataManager()
-   private let viewContext: NSManagedObjectContext
-   
-   
-   private init() {
-   viewContext = PersistenceController.shared.container.viewContext
-   }
-   */
-  
-  @Published var currentSession: SleepSessionEntity?
-  @Published var currentPhase: SleepPhaseEntity?
-  
-  private let context = PersistenceController.shared.container.viewContext
-  
-  func createSleepSession() -> SleepSessionEntity {
-    let newSession = SleepSessionEntity(context: context)
-    newSession.id = UUID()
-    newSession.startTime = Date()
-    newSession.sleepQuality = 0.0
-    try? context.save()
-    return newSession
-  }
-  
-  func endSleepSession(session: SleepSessionEntity) {
-    session.endTime = Date()
-    try? context.save()
-  }
-  
-  // 🔹 Crea una nova sessió de son
-  func startNewSession() {
-    let session = SleepSessionEntity(context: context)
-    session.id = UUID()
-    session.startTime = Date()
-    
-    let phase = SleepPhaseEntity(context: context)
-    phase.startTime = Date()
-    phase.session = session // 🔹 Assigna la fase a la sessió
-    
-    currentSession = session
-    currentPhase = phase
-    saveContext()
-  }
-  
-  // 🔹 Finalitza la sessió de son
-  func endCurrentSession() {
-    currentSession?.endTime = Date()
-    saveContext()
-    currentSession = nil
-    currentPhase = nil
-  }
-  
-  /// 📌 Afegir una nova sessió de son
-  func addSleepSession(startTime: Date, endTime: Date, sleepQuality: Double) {
-    let newSession = SleepSessionEntity(context: context)
-    newSession.id = UUID()
-    newSession.startTime = startTime
-    newSession.endTime = endTime
-    newSession.sleepQuality = sleepQuality
-    
-    saveContext()
-  }
-  
-  func addSleepPhase(to session: SleepSessionEntity, phaseType: String, startTime: Date, endTime: Date, snoringIntensity: Double?, oxygenLevel: Double?, bodyMovement: Double?, heartRate: Double?) {
-    let newPhase = SleepPhaseEntity(context: context)
-    newPhase.id = UUID()
-    newPhase.phaseType = phaseType
-    newPhase.startTime = startTime
-    newPhase.endTime = endTime
-    newPhase.snoringIntensity = snoringIntensity ?? 0.0
-    newPhase.oxygenLevel = oxygenLevel ?? 0.0
-    newPhase.bodyMovement = bodyMovement ?? 0.0
-    newPhase.heartRate = heartRate ?? 0.0
-    newPhase.session = session // 🔹 Relacionem la fase amb la sessió
-    
-    saveContext()
-  }
-  
-  func addSoundEvent(to phase: SleepPhaseEntity, eventType: String, startTime: Date, endTime: Date, intensity: Double, frequency: Double?, possibleApnea: Bool?) {
-    let newSoundEvent = SoundEventEntity(context: context)
-    newSoundEvent.id = UUID()
-    newSoundEvent.eventType = eventType
-    newSoundEvent.startTime = startTime
-    newSoundEvent.endTime = endTime
-    newSoundEvent.intensity = intensity
-    newSoundEvent.duration = endTime.timeIntervalSince(startTime)
-    newSoundEvent.frequency = frequency ?? 0.0
-    newSoundEvent.possibleApnea = possibleApnea ?? false
-    newSoundEvent.phase = phase // 🔹 Relacionem el so amb la fase del son
-    
-    phase.addToSoundEvents(newSoundEvent) // 🔹 Afegim el so a la fase
-    
-    saveContext()
-  }
-  
-  /// 📌 Recuperar totes les sessions de son
-  func fetchSleepSessions() -> [SleepSessionEntity] {
-    let fetchRequest: NSFetchRequest<SleepSessionEntity> = SleepSessionEntity.fetchRequest()
-    fetchRequest.sortDescriptors = [NSSortDescriptor(key: "startTime", ascending: false)]
-    
-    do {
-      return try context.fetch(fetchRequest)
-    } catch {
-      print("❌ Error recuperant sessions de son: \(error.localizedDescription)")
-      return []
+@MainActor
+final class SleepDataManager: ObservableObject {
+    @Published private(set) var currentSession: SleepSessionEntity?
+    @Published private(set) var currentPhase: SleepPhaseEntity?
+
+    private let context: NSManagedObjectContext
+
+    init(context: NSManagedObjectContext = PersistenceController.shared.container.viewContext) {
+        self.context = context
     }
-  }
-  
-  /// 📌 Esborrar una sessió de son
-  func deleteSleepSession(_ session: SleepSessionEntity) {
-    context.delete(session)
-    saveContext()
-  }
-  
-  /// 📌 Guardar canvis a `CoreData`
-  private func saveContext() {
-    do {
-      try context.save()
-    } catch {
-      print("❌ Error guardant dades: \(error.localizedDescription)")
+
+    func startNewSession(tags: Set<SleepContextTag> = []) {
+        guard currentSession == nil else { return }
+
+        let startTime = Date()
+        let session = SleepSessionEntity(context: context)
+        session.id = UUID()
+        session.startTime = startTime
+        session.sleepQuality = 0
+        session.contextTags = tags.map(\.rawValue).sorted().joined(separator: ",")
+
+        let phase = SleepPhaseEntity(context: context)
+        phase.id = UUID()
+        phase.phaseType = "Monitoring"
+        phase.startTime = startTime
+        phase.session = session
+
+        currentSession = session
+        currentPhase = phase
+
+        if !saveContext() {
+            context.rollback()
+            currentSession = nil
+            currentPhase = nil
+        }
     }
-  }
+
+    func endCurrentSession() {
+        guard let session = currentSession else { return }
+
+        let endTime = Date()
+        session.endTime = endTime
+        currentPhase?.endTime = endTime
+
+        if saveContext() {
+            currentSession = nil
+            currentPhase = nil
+        }
+    }
+
+    func addSleepSession(startTime: Date, endTime: Date, sleepQuality: Double) {
+        let session = SleepSessionEntity(context: context)
+        session.id = UUID()
+        session.startTime = startTime
+        session.endTime = endTime
+        session.sleepQuality = sleepQuality
+        saveContext()
+    }
+
+    func addSleepPhase(
+        to session: SleepSessionEntity,
+        phaseType: String,
+        startTime: Date,
+        endTime: Date,
+        snoringIntensity: Double?,
+        oxygenLevel: Double?,
+        bodyMovement: Double?,
+        heartRate: Double?
+    ) {
+        let phase = SleepPhaseEntity(context: context)
+        phase.id = UUID()
+        phase.phaseType = phaseType
+        phase.startTime = startTime
+        phase.endTime = endTime
+        phase.snoringIntensity = snoringIntensity ?? 0
+        phase.oxygenLevel = oxygenLevel ?? 0
+        phase.bodyMovement = bodyMovement ?? 0
+        phase.heartRate = heartRate ?? 0
+        phase.session = session
+        saveContext()
+    }
+
+    func addSoundEvent(
+        to phase: SleepPhaseEntity,
+        eventType: String,
+        startTime: Date,
+        endTime: Date,
+        intensity: Double,
+        frequency: Double?,
+        possibleApnea: Bool?
+    ) {
+        let event = SoundEventEntity(context: context)
+        event.id = UUID()
+        event.eventType = eventType
+        event.startTime = startTime
+        event.endTime = endTime
+        event.intensity = intensity
+        event.duration = endTime.timeIntervalSince(startTime)
+        event.frequency = frequency ?? 0
+        event.possibleApnea = possibleApnea ?? false
+        event.phase = phase
+        saveContext()
+    }
+
+    func addSnoreEvent(_ summary: SnoreEventSummary) {
+        guard let phase = currentPhase else { return }
+
+        let event = SoundEventEntity(context: context)
+        event.id = UUID()
+        event.eventType = "Snore"
+        event.startTime = summary.startTime
+        event.endTime = summary.endTime
+        event.duration = summary.duration
+        event.intensity = summary.maximumRMS
+        event.frequency = 0
+        event.possibleApnea = false
+        event.averageConfidence = summary.averageConfidence
+        event.maximumConfidence = summary.maximumConfidence
+        event.averageRMS = summary.averageRMS
+        event.maximumRMS = summary.maximumRMS
+        event.predictionCount = Int32(summary.predictionCount)
+        event.phase = phase
+        saveContext()
+    }
+
+    func fetchSleepSessions() -> [SleepSessionEntity] {
+        let request: NSFetchRequest<SleepSessionEntity> = SleepSessionEntity.fetchRequest()
+        request.sortDescriptors = [NSSortDescriptor(keyPath: \SleepSessionEntity.startTime, ascending: false)]
+
+        do {
+            return try context.fetch(request)
+        } catch {
+            print("Error recuperant sessions de son: \(error.localizedDescription)")
+            return []
+        }
+    }
+
+    func deleteSleepSession(_ session: SleepSessionEntity) {
+        context.delete(session)
+        saveContext()
+    }
+
+    @discardableResult
+    private func saveContext() -> Bool {
+        guard context.hasChanges else { return true }
+
+        do {
+            try context.save()
+            return true
+        } catch {
+            print("Error guardant dades de son: \(error.localizedDescription)")
+            return false
+        }
+    }
 }

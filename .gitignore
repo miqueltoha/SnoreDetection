@@ -1,0 +1,9 @@
+*.xcuserstate
+xcuserdata/
+
+SnoreDetection/Training/Snore/.venv/
+SnoreDetection/Training/Snore/__pycache__/
+SnoreDetection/Training/Snore/Snoring Dataset/
+SnoreDetection/Training/Snore/archive.zip
+SnoreDetection/Training/Snore/*.pkl
+SnoreDetection/Training/Snore/*.mlmodel

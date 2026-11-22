@@ -9,7 +9,6 @@ import Foundation
 import AVFoundation
 import Accelerate
 import Combine
-import CoreML
 
 class SleepTrackingViewModel: ObservableObject {
   @Published var isTracking = false
@@ -23,28 +22,63 @@ class SleepTrackingViewModel: ObservableObject {
   private var sampleRate: Double = 44100.0
   private let rmsThreshold: Float = 0.003
 
-  private var recordedSamples: [Float] = []
-  private var isRecording = false
-  private var recordTimer: Timer?
-  private let model: SnoreBinary_NoRMS?
+  private var rollingSamples: [Float] = []
+  private var samplesSinceAnalysis = 0
+  private var rmsSum: Double = 0
+  private var rmsMeasurementCount = 0
+  private var lastBannerTime = Date.distantPast
+  private let bannerCooldown: TimeInterval = 1
+  private let analysisQueue = DispatchQueue(label: "SnoreDetection.EdgeImpulseAnalysis", qos: .userInitiated)
+  private let snoreEventTracker = SnoreEventTracker()
+  private var completedSnoreEvents: [SnoreEventSummary] = []
+  private let modelSampleRate: Double = 48_000
+  private let sleepDataManager: SleepDataManager
+  private let toastManager: ToastManager
 
-  init() {
-    do {
-      model = try SnoreBinary_NoRMS(configuration: MLModelConfiguration())
-    } catch {
-      model = nil
-      print("Error carregant el model Core ML: \(error.localizedDescription)")
+  init(sleepDataManager: SleepDataManager, toastManager: ToastManager) {
+    self.sleepDataManager = sleepDataManager
+    self.toastManager = toastManager
+  }
+
+  @MainActor
+  func startTracking(tags: Set<SleepContextTag> = []) {
+    print("Dins de startAudioEngine()...")
+    currentRMS = 0
+    averageRMS = 0
+    rmsSum = 0
+    rmsMeasurementCount = 0
+    rollingSamples.removeAll(keepingCapacity: true)
+    samplesSinceAnalysis = 0
+    lastBannerTime = .distantPast
+    analysisQueue.sync {
+      snoreEventTracker.reset()
+      completedSnoreEvents.removeAll(keepingCapacity: true)
+    }
+    startAudioEngine()
+
+    if isTracking {
+      sleepDataManager.startNewSession(tags: tags)
     }
   }
 
-  func startTracking() {
-    print("Dins de startAudioEngine()...")
-    startAudioEngine()
-  }
-
+  @MainActor
   func stopTracking() {
+    let wasTracking = isTracking
     isTracking = false
     stopAudioEngine()
+
+    if wasTracking {
+      let events = analysisQueue.sync {
+        if let finalEvent = snoreEventTracker.finish(at: Date()) {
+          completedSnoreEvents.append(finalEvent)
+        }
+        let events = completedSnoreEvents
+        completedSnoreEvents.removeAll(keepingCapacity: true)
+        return events
+      }
+      events.forEach(sleepDataManager.addSnoreEvent)
+      sleepDataManager.endCurrentSession()
+    }
   }
 
   private func startAudioEngine() {
@@ -53,6 +87,7 @@ class SleepTrackingViewModel: ObservableObject {
     let audioSession = AVAudioSession.sharedInstance()
     do {
       try audioSession.setCategory(.playAndRecord, mode: .measurement, options: [.defaultToSpeaker, .allowBluetoothHFP])
+      try audioSession.setPreferredSampleRate(modelSampleRate)
       try audioSession.setActive(true)
     } catch {
       isTracking = false
@@ -115,78 +150,184 @@ class SleepTrackingViewModel: ObservableObject {
     let samples = Array(UnsafeBufferPointer(start: channelData, count: frameLength))
 
     let rms = calculateRMS(samples: samples)
+    rmsSum += Double(rms)
+    rmsMeasurementCount += 1
+    let sessionAverage = Float(rmsSum / Double(rmsMeasurementCount))
+
     DispatchQueue.main.async {
       self.currentRMS = rms
-      self.averageRMS = self.averageRMS == 0 ? rms : (self.averageRMS * 0.9 + rms * 0.1)
+      self.averageRMS = sessionAverage
     }
 
-    if rms > rmsThreshold && isTracking && !isRecording {
-      print("Soroll detectat. Gravarem 1 segon...")
-      isRecording = true
-      recordedSamples = []
-      recordedSamples.append(contentsOf: samples)
+    let windowSampleCount = max(Int(sampleRate), 1)
+    let hopSampleCount = max(Int(sampleRate / 4), 1)
 
-      recordTimer?.invalidate()
-      DispatchQueue.main.async {
-        self.recordTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { _ in
-          print("Timer executat")
-          print("Samples acumulats: \(self.recordedSamples.count)")
-          let oneSecondBuffer = self.recordedSamples
-          self.recordedSamples = []
-          self.runSnoreAnalysis(samples: oneSecondBuffer)
-          self.isRecording = false
-        }
-      }
-    } else if isRecording {
-      print("Afegint samples mentre gravem. Total actual: \(recordedSamples.count)")
-      recordedSamples.append(contentsOf: samples)
+    rollingSamples.append(contentsOf: samples)
+    if rollingSamples.count > windowSampleCount {
+      rollingSamples = Array(rollingSamples.suffix(windowSampleCount))
     }
-  }
 
-  private func runSnoreAnalysis(samples: [Float]) {
-    guard let model else {
-      print("Model Core ML no disponible. S'omet l'analisi de roncs.")
+    samplesSinceAnalysis += samples.count
+    guard rollingSamples.count == windowSampleCount,
+          samplesSinceAnalysis >= hopSampleCount else {
       return
     }
 
-    print("Inici analisi de \(samples.count) mostres")
-    let mfccs = AudioFeatureExtractor.extractMFCCs(from: samples)
-    print("MFCCs:", mfccs)
+    samplesSinceAnalysis %= hopSampleCount
+    let oneSecondWindow = rollingSamples
+    let windowRMS = calculateRMS(samples: oneSecondWindow)
+    let predictionTime = Date()
 
-    let zcr = AudioFeatureExtractor.calculateZCR(from: samples)
-    print("ZCR:", zcr)
+    analysisQueue.async { [weak self] in
+      guard let self else { return }
 
-    if mfccs.count == 13 {
-      do {
-        let prediction = try model.prediction(
-          zcr: Double(zcr),
-          mfcc_1: Double(mfccs[0]),
-          mfcc_2: Double(mfccs[1]),
-          mfcc_3: Double(mfccs[2]),
-          mfcc_4: Double(mfccs[3]),
-          mfcc_5: Double(mfccs[4]),
-          mfcc_6: Double(mfccs[5]),
-          mfcc_7: Double(mfccs[6]),
-          mfcc_8: Double(mfccs[7]),
-          mfcc_9: Double(mfccs[8]),
-          mfcc_10: Double(mfccs[9]),
-          mfcc_11: Double(mfccs[10]),
-          mfcc_12: Double(mfccs[11]),
-          mfcc_13: Double(mfccs[12])
+      if windowRMS <= self.rmsThreshold {
+        self.handlePrediction(
+          timestamp: predictionTime,
+          snoringProbability: 0,
+          rms: windowRMS
         )
-
-        let label = prediction.classLabel
-        let confidence = prediction.classProbability[label] ?? 0.0
-        print("Prediccio: \(label) amb confianca: \(confidence)")
-
-        if label == "snore" {
-          DispatchQueue.main.async {
-            NotificationCenter.default.post(name: .showToast, object: "Ronc detectat")
-          }
-        }
-      } catch {
-        print("Error durant la prediccio: \(error.localizedDescription)")
+        return
       }
+
+      self.runSnoreAnalysis(
+        samples: oneSecondWindow,
+        rms: windowRMS,
+        timestamp: predictionTime
+      )
+    }
+  }
+
+  private func runSnoreAnalysis(
+    samples: [Float],
+    rms: Float,
+    timestamp: Date
+  ) {
+    let normalizedSamples = resampleForModel(samples)
+    guard normalizedSamples.count == Int(modelSampleRate) else {
+      print("Nombre de mostres incorrecte per Edge Impulse: \(normalizedSamples.count)")
+      return
+    }
+
+    // Edge Impulse trained the MFE pipeline with PCM16-scale audio. AVAudioEngine
+    // supplies normalized floats, so restore the scale used by the training data.
+    var modelSamples = [Float](repeating: 0, count: normalizedSamples.count)
+    var pcmScale: Float = 32_768
+    vDSP_vsmul(
+      normalizedSamples,
+      1,
+      &pcmScale,
+      &modelSamples,
+      1,
+      vDSP_Length(normalizedSamples.count)
+    )
+
+    var lowerBound: Float = -32_768
+    var upperBound: Float = 32_767
+    vDSP_vclip(
+      modelSamples,
+      1,
+      &lowerBound,
+      &upperBound,
+      &modelSamples,
+      1,
+      vDSP_Length(modelSamples.count)
+    )
+
+    let peakPCM = modelSamples.reduce(Float.zero) { max($0, abs($1)) }
+    print(
+      "Inici analisi Edge Impulse de \(modelSamples.count) mostres a 48 kHz, " +
+      "pic PCM16=\(peakPCM)"
+    )
+    let prediction = modelSamples.withUnsafeBufferPointer { buffer in
+      EISnoreClassify(buffer.baseAddress, buffer.count)
+    }
+
+    guard prediction.success else {
+      print("Error Edge Impulse: \(prediction.errorCode)")
+      return
+    }
+
+    handlePrediction(
+      timestamp: timestamp,
+      snoringProbability: Double(prediction.snoringConfidence),
+      rms: rms
+    )
+
+    let isSnore = prediction.isSnore
+    let confidence = isSnore
+      ? prediction.snoringConfidence
+      : prediction.noSnoringConfidence
+    let label = isSnore ? "Snoring" : "No Snoring"
+    print(
+      "Prediccio Edge Impulse: \(label), " +
+      "snoring=\(prediction.snoringConfidence), " +
+      "noSnoring=\(prediction.noSnoringConfidence)"
+    )
+
+    guard Date().timeIntervalSince(lastBannerTime) >= bannerCooldown else {
+      return
+    }
+    lastBannerTime = Date()
+
+    let percentage = Int((confidence * 100).rounded())
+    let message = isSnore
+      ? "Ronc detectat (\(percentage)% de confiança)"
+      : "No sembla un ronc (\(percentage)% de confiança)"
+
+    DispatchQueue.main.async {
+      self.toastManager.show(
+        message: message,
+        type: isSnore ? .error : .success
+      )
+    }
+  }
+
+  private func handlePrediction(
+    timestamp: Date,
+    snoringProbability: Double,
+    rms: Float
+  ) {
+    let sample = SnorePredictionSample(
+      timestamp: timestamp,
+      snoringProbability: snoringProbability,
+      rms: Double(rms)
+    )
+
+    guard let event = snoreEventTracker.consume(sample) else { return }
+    completedSnoreEvents.append(event)
+
+    DispatchQueue.main.async { [weak self] in
+      self?.persistCompletedSnoreEvents()
+    }
+  }
+
+  @MainActor
+  private func persistCompletedSnoreEvents() {
+    let events = analysisQueue.sync {
+      let events = completedSnoreEvents
+      completedSnoreEvents.removeAll(keepingCapacity: true)
+      return events
+    }
+    events.forEach(sleepDataManager.addSnoreEvent)
+  }
+
+  private func resampleForModel(_ samples: [Float]) -> [Float] {
+    let targetCount = Int(modelSampleRate)
+    guard !samples.isEmpty else { return [] }
+    guard samples.count != targetCount else { return samples }
+    guard samples.count > 1, targetCount > 1 else {
+      return Array(repeating: samples[0], count: targetCount)
+    }
+
+    let scale = Double(samples.count - 1) / Double(targetCount - 1)
+    return (0..<targetCount).map { targetIndex in
+      let sourcePosition = Double(targetIndex) * scale
+      let lowerIndex = Int(sourcePosition)
+      let upperIndex = min(lowerIndex + 1, samples.count - 1)
+      let fraction = Float(sourcePosition - Double(lowerIndex))
+      return samples[lowerIndex] +
+        (samples[upperIndex] - samples[lowerIndex]) * fraction
     }
   }
 
@@ -198,91 +339,230 @@ class SleepTrackingViewModel: ObservableObject {
   }
 }
 
-extension Notification.Name {
-  static let showToast = Notification.Name("showToast")
-}
-
 class AudioFeatureExtractor {
+  private static let fftSize = 2048
+  private static let hopSize = 512
+  private static let melBandCount = 128
+  private static let coefficientCount = 13
+
   static func calculateZCR(from samples: [Float]) -> Float {
-    let safeSamples = Array(samples)
-    guard safeSamples.count > 1 else { return 0.0 }
-    var zeroCrossings = 0
-    for i in 1..<safeSamples.count {
-      if (safeSamples[i - 1] >= 0 && safeSamples[i] < 0) ||
-         (safeSamples[i - 1] < 0 && safeSamples[i] >= 0) {
-        zeroCrossings += 1
+    guard samples.count > 1 else { return 0 }
+
+    let padding = fftSize / 2
+    let padded = Array(repeating: samples[0], count: padding) +
+      samples +
+      Array(repeating: samples[samples.count - 1], count: padding)
+
+    var frameRates: [Float] = []
+    var frameStart = 0
+    while frameStart + fftSize <= padded.count {
+      var crossings = 0
+      let frameEnd = frameStart + fftSize
+      for index in (frameStart + 1)..<frameEnd {
+        if (padded[index - 1] >= 0) != (padded[index] >= 0) {
+          crossings += 1
+        }
       }
+      frameRates.append(Float(crossings) / Float(fftSize))
+      frameStart += hopSize
     }
-    return Float(zeroCrossings) / Float(safeSamples.count - 1)
+
+    guard !frameRates.isEmpty else { return 0 }
+    return frameRates.reduce(0, +) / Float(frameRates.count)
   }
 
-  static func extractMFCCs(from signal: [Float]) -> [Float] {
-    let fftSize = 1024
-    let numCoefficients = 13
+  static func extractMFCCs(from signal: [Float], sampleRate: Double = 44_100) -> [Float] {
+    guard signal.count >= fftSize, sampleRate > 0 else { return [] }
 
-    guard signal.count >= fftSize else {
-      print("No hi ha prou mostres per a FFT")
+    let paddedSignal = reflectedPadding(signal, amount: fftSize / 2)
+    let filters = melFilterBank(sampleRate: sampleRate)
+    var window = [Float](repeating: 0, count: fftSize)
+    vDSP_hann_window(&window, vDSP_Length(fftSize), 0)
+
+    guard let fftSetup = vDSP_create_fftsetup(
+      vDSP_Length(log2(Float(fftSize))),
+      FFTRadix(FFT_RADIX2)
+    ) else {
       return []
     }
+    defer { vDSP_destroy_fftsetup(fftSetup) }
 
-    var window = [Float](repeating: 0.0, count: fftSize)
-    vDSP_hamm_window(&window, vDSP_Length(fftSize), 0)
+    var melSpectrogram: [[Float]] = []
+    var frameStart = 0
 
-    let signalSegment = Array(signal.prefix(fftSize))
-    var windowed = [Float](repeating: 0.0, count: fftSize)
-    vDSP_vmul(signalSegment, 1, window, 1, &windowed, 1, vDSP_Length(fftSize))
+    while frameStart + fftSize <= paddedSignal.count {
+      let frame = Array(paddedSignal[frameStart..<(frameStart + fftSize)])
+      var windowed = [Float](repeating: 0, count: fftSize)
+      vDSP_vmul(frame, 1, window, 1, &windowed, 1, vDSP_Length(fftSize))
 
-    var real = [Float](repeating: 0.0, count: fftSize / 2)
-    var imag = [Float](repeating: 0.0, count: fftSize / 2)
-    var magnitudes = [Float](repeating: 0.0, count: fftSize / 2)
-
-    guard let fftSetup = vDSP_create_fftsetup(vDSP_Length(log2(Float(fftSize))), FFTRadix(FFT_RADIX2)) else {
-      print("No s'ha pogut crear FFT Setup")
-      return []
+      let powerSpectrum = powerSpectrum(
+        for: windowed,
+        fftSetup: fftSetup
+      )
+      let melPowers = filters.map { filter in
+        zip(filter, powerSpectrum).reduce(Float.zero) {
+          $0 + $1.0 * $1.1
+        }
+      }
+      melSpectrogram.append(melPowers)
+      frameStart += hopSize
     }
 
-    real.withUnsafeMutableBufferPointer { realPtr in
-      imag.withUnsafeMutableBufferPointer { imagPtr in
-        guard let realBaseAddress = realPtr.baseAddress,
-              let imagBaseAddress = imagPtr.baseAddress else {
+    guard !melSpectrogram.isEmpty else { return [] }
+
+    var decibels = melSpectrogram.map { frame in
+      frame.map { 10 * log10(max($0, 1e-10)) }
+    }
+    let maximumDB = decibels.flatMap { $0 }.max() ?? 0
+    let floorDB = maximumDB - 80
+
+    for frameIndex in decibels.indices {
+      for bandIndex in decibels[frameIndex].indices {
+        decibels[frameIndex][bandIndex] = max(
+          decibels[frameIndex][bandIndex],
+          floorDB
+        )
+      }
+    }
+
+    var coefficientSums = [Float](repeating: 0, count: coefficientCount)
+    for frame in decibels {
+      let coefficients = dct(frame)
+      for index in 0..<coefficientCount {
+        coefficientSums[index] += coefficients[index]
+      }
+    }
+
+    let frameCount = Float(decibels.count)
+    return coefficientSums.map { $0 / frameCount }
+  }
+
+  private static func reflectedPadding(_ signal: [Float], amount: Int) -> [Float] {
+    guard signal.count > amount else { return signal }
+
+    let prefix = signal[1...amount].reversed()
+    let suffixStart = signal.count - amount - 1
+    let suffix = signal[suffixStart..<(signal.count - 1)].reversed()
+    return Array(prefix) + signal + Array(suffix)
+  }
+
+  private static func powerSpectrum(
+    for frame: [Float],
+    fftSetup: FFTSetup
+  ) -> [Float] {
+    let halfSize = fftSize / 2
+    var real = [Float](repeating: 0, count: halfSize)
+    var imaginary = [Float](repeating: 0, count: halfSize)
+
+    real.withUnsafeMutableBufferPointer { realPointer in
+      imaginary.withUnsafeMutableBufferPointer { imaginaryPointer in
+        guard let realBase = realPointer.baseAddress,
+              let imaginaryBase = imaginaryPointer.baseAddress else {
           return
         }
 
-        var split = DSPSplitComplex(realp: realBaseAddress, imagp: imagBaseAddress)
-        windowed.withUnsafeBufferPointer { ptr in
-          guard let baseAddress = ptr.baseAddress else { return }
-          baseAddress.withMemoryRebound(to: DSPComplex.self, capacity: fftSize) { complexPtr in
-            vDSP_ctoz(complexPtr, 2, &split, 1, vDSP_Length(fftSize / 2))
-            vDSP_fft_zrip(fftSetup, &split, 1, vDSP_Length(log2(Float(fftSize))), FFTDirection(FFT_FORWARD))
-            vDSP_zvmags(&split, 1, &magnitudes, 1, vDSP_Length(fftSize / 2))
+        var split = DSPSplitComplex(realp: realBase, imagp: imaginaryBase)
+        frame.withUnsafeBufferPointer { framePointer in
+          guard let baseAddress = framePointer.baseAddress else { return }
+          baseAddress.withMemoryRebound(
+            to: DSPComplex.self,
+            capacity: halfSize
+          ) { complexPointer in
+            vDSP_ctoz(
+              complexPointer,
+              2,
+              &split,
+              1,
+              vDSP_Length(halfSize)
+            )
+            vDSP_fft_zrip(
+              fftSetup,
+              &split,
+              1,
+              vDSP_Length(log2(Float(fftSize))),
+              FFTDirection(FFT_FORWARD)
+            )
           }
         }
       }
     }
 
-    vDSP_destroy_fftsetup(fftSetup)
+    var power = [Float](repeating: 0, count: halfSize + 1)
+    // vDSP's packed real FFT is scaled by two relative to NumPy's
+    // rFFT, so power must be divided by four to match librosa.
+    let powerScale: Float = 0.25
+    power[0] = real[0] * real[0] * powerScale
+    power[halfSize] = imaginary[0] * imaginary[0] * powerScale
 
-    var logMagnitudes = [Float](repeating: 0.0, count: fftSize / 2)
-    var one: Float = 1.0
-    vDSP_vsmsa(magnitudes, 1, &one, &one, &logMagnitudes, 1, vDSP_Length(fftSize / 2))
-    vvlogf(&logMagnitudes, logMagnitudes, [Int32(fftSize / 2)])
-
-    let dctInputCount = 128
-    let trimmedLogMagnitudes = Array(logMagnitudes.prefix(dctInputCount))
-
-    guard trimmedLogMagnitudes.count == dctInputCount else {
-      print("trimmedLogMagnitudes.count \(trimmedLogMagnitudes.count) != \(dctInputCount)")
-      return []
+    if halfSize > 1 {
+      for index in 1..<halfSize {
+        power[index] = (
+          real[index] * real[index] +
+          imaginary[index] * imaginary[index]
+        ) * powerScale
+      }
     }
 
-    var dctOutput = [Float](repeating: 0.0, count: dctInputCount)
-    if let dctSetup = vDSP.DCT(count: dctInputCount, transformType: .II) {
-      dctSetup.transform(trimmedLogMagnitudes, result: &dctOutput)
-      let mfccs = Array(dctOutput.prefix(numCoefficients))
-      return mfccs
-    } else {
-      print("Error creant DCT Setup")
-      return []
+    return power
+  }
+
+  private static func melFilterBank(sampleRate: Double) -> [[Float]] {
+    let binCount = fftSize / 2 + 1
+    let minimumMel = hzToMel(0)
+    let maximumMel = hzToMel(sampleRate / 2)
+    let melPoints = (0..<(melBandCount + 2)).map { index in
+      minimumMel +
+        (maximumMel - minimumMel) *
+        Double(index) /
+        Double(melBandCount + 1)
+    }
+    let frequencies = melPoints.map(melToHz)
+
+    return (0..<melBandCount).map { band in
+      let lower = frequencies[band]
+      let center = frequencies[band + 1]
+      let upper = frequencies[band + 2]
+      let normalization = 2 / max(upper - lower, .leastNonzeroMagnitude)
+
+      return (0..<binCount).map { bin in
+        let frequency = Double(bin) * sampleRate / Double(fftSize)
+        let lowerSlope = (frequency - lower) / max(center - lower, .leastNonzeroMagnitude)
+        let upperSlope = (upper - frequency) / max(upper - center, .leastNonzeroMagnitude)
+        return Float(max(0, min(lowerSlope, upperSlope)) * normalization)
+      }
+    }
+  }
+
+  private static func hzToMel(_ frequency: Double) -> Double {
+    if frequency < 1_000 {
+      return 3 * frequency / 200
+    }
+    return 15 + 27 * log(frequency / 1_000) / log(6.4)
+  }
+
+  private static func melToHz(_ mel: Double) -> Double {
+    if mel < 15 {
+      return 200 * mel / 3
+    }
+    return 1_000 * exp(log(6.4) * (mel - 15) / 27)
+  }
+
+  private static func dct(_ values: [Float]) -> [Float] {
+    let count = values.count
+    return (0..<coefficientCount).map { coefficient in
+      let scale = coefficient == 0
+        ? sqrt(1 / Float(count))
+        : sqrt(2 / Float(count))
+
+      let sum = values.enumerated().reduce(Float.zero) { result, pair in
+        let angle =
+          Float.pi *
+          (Float(pair.offset) + 0.5) *
+          Float(coefficient) /
+          Float(count)
+        return result + pair.element * cos(angle)
+      }
+      return scale * sum
     }
   }
 }

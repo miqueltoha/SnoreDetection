@@ -14,6 +14,7 @@
         <relationship name="soundEvents" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="SoundEventEntity" inverseName="phase" inverseEntity="SoundEventEntity"/>
     </entity>
     <entity name="SleepSessionEntity" representedClassName="SleepSessionEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="contextTags" optional="YES" attributeType="String" defaultValueString=""/>
         <attribute name="endTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="sleepQuality" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
@@ -21,13 +22,18 @@
         <relationship name="sleepPhases" optional="YES" toMany="YES" deletionRule="Cascade" destinationEntity="SleepPhaseEntity" inverseName="session" inverseEntity="SleepPhaseEntity"/>
     </entity>
     <entity name="SoundEventEntity" representedClassName="SoundEventEntity" syncable="YES" codeGenerationType="class">
+        <attribute name="averageConfidence" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="averageRMS" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="duration" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="endTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <attribute name="eventType" optional="YES" attributeType="String"/>
         <attribute name="frequency" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="id" optional="YES" attributeType="UUID" usesScalarValueType="NO"/>
         <attribute name="intensity" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="maximumConfidence" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
+        <attribute name="maximumRMS" optional="YES" attributeType="Double" defaultValueString="0.0" usesScalarValueType="YES"/>
         <attribute name="possibleApnea" optional="YES" attributeType="Boolean" usesScalarValueType="YES"/>
+        <attribute name="predictionCount" optional="YES" attributeType="Integer 32" defaultValueString="0" usesScalarValueType="YES"/>
         <attribute name="startTime" optional="YES" attributeType="Date" usesScalarValueType="NO"/>
         <relationship name="phase" optional="YES" maxCount="1" deletionRule="Nullify" destinationEntity="SleepPhaseEntity" inverseName="soundEvents" inverseEntity="SleepPhaseEntity"/>
     </entity>

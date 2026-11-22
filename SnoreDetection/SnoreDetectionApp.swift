@@ -10,7 +10,7 @@ import SwiftUI
 @main
 struct SnoreDetectionApp: App {
   @StateObject private var appState = AppState()
-  //@StateObject var sleepDataManager = SleepDataManager()
+  @StateObject private var sleepDataManager = SleepDataManager()
   @StateObject var toastManager = ToastManager()
   let persistenceController = PersistenceController.shared
   
@@ -18,7 +18,7 @@ struct SnoreDetectionApp: App {
     WindowGroup {
       ContentView()
         .environmentObject(appState)
-        //.environmentObject(sleepDataManager)
+        .environmentObject(sleepDataManager)
         .environmentObject(toastManager)
         .environment(\.managedObjectContext, persistenceController.container.viewContext)
         .onAppear {
